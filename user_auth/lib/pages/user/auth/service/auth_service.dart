@@ -6,7 +6,7 @@ class AuthMethod {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  //for sign up
+  // Sign up user
   Future<String> signUpUser({
     required String email,
     required String password,
@@ -14,51 +14,55 @@ class AuthMethod {
   }) async {
     try {
       if (email.isEmpty || name.isEmpty || password.isEmpty) {
-        return "plese fill all fields";
+        return "Please fill all fields";
       }
-      //create user
+
+      // Create user in Firebase Authentication
       UserCredential cred = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
-      //store created user
+
+      // Store user data in Firestore
       await _firestore.collection("users").doc(cred.user!.uid).set({
         "name": name,
         "email": email,
         "uid": cred.user!.uid,
         "createdAt": FieldValue.serverTimestamp(),
       });
+
       return "Success";
     } catch (e) {
-      return (e.toString());
+      return e.toString();
     }
   }
-  //for login
 
-  Future<String> LoginUser({
+  // Login user
+  Future<String> loginUser({
     required String email,
     required String password,
   }) async {
     try {
       if (email.isEmpty || password.isEmpty) {
-        return "plese fill all fields";
+        return "Please fill all fields";
       }
-      //create user
+
       await _auth.signInWithEmailAndPassword(email: email, password: password);
 
       return "Success";
     } catch (e) {
-      return (e.toString());
+      return e.toString();
     }
   }
 
-  //log out
+  // Log out
   Future<String> signOut() async {
     await _auth.signOut();
     return "Success!";
   }
 }
 
-final AuthMethodProvider = Provider<AuthMethod>((ref) {
+// Provider for Riverpod
+final authMethodProvider = Provider<AuthMethod>((ref) {
   return AuthMethod();
 });

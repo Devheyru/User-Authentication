@@ -3,37 +3,51 @@ import 'package:user_auth/pages/user/auth/model/auth_model.dart';
 
 class AuthFormNotifier extends StateNotifier<AuthFormState> {
   AuthFormNotifier() : super(AuthFormState());
+
   void togglePasswordVisiblity() {
     state = state.copyWith(isPasswordHidden: !state.isPasswordHidden);
   }
 
   void updateName(String name) {
-    String? nameError;
-    if (name.isEmpty || name.length < 6) {
-      nameError = "Provide your full name (min 6 chars)";
-    }
-    state = state.copyWith(name: name, nameError: nameError);
+    // Only update the name value; do NOT set error here
+    state = state.copyWith(name: name);
   }
 
   void updateEmail(String email) {
-    String? emailError;
-    if (email.isEmpty ||
-        !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
-      emailError = "Enter a valid email";
-    }
-    state = state.copyWith(email: email, emailError: emailError);
+    // Only update the email value; do NOT set error here
+    state = state.copyWith(email: email);
   }
 
   void updatePassword(String password) {
-    String? passwordError;
-    if (password.isEmpty || password.length < 8) {
-      passwordError = "Password must be at least 8 characters";
-    }
-    state = state.copyWith(password: password, passwordError: passwordError);
+    // Only update the password value; do NOT set error here
+    state = state.copyWith(password: password);
   }
 
   void setLoading(bool isLoading) {
     state = state.copyWith(isLoading: isLoading);
+  }
+
+  /// Call this method when signup button is pressed
+  /// It validates all fields and shows errors if invalid
+  void showValidationErrors() {
+    state = state.copyWith(
+      showErrors: true,
+      nameError:
+          (state.name.isEmpty || state.name.length < 6)
+              ? "Provide your full name (min 6 chars)"
+              : null,
+      emailError:
+          (state.email.isEmpty ||
+                  !RegExp(
+                    r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                  ).hasMatch(state.email))
+              ? "Enter a valid email"
+              : null,
+      passwordError:
+          (state.password.isEmpty || state.password.length < 8)
+              ? "Password must be at least 8 characters"
+              : null,
+    );
   }
 }
 

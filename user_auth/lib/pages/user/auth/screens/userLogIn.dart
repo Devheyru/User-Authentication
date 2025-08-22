@@ -1,14 +1,51 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:user_auth/pages/user/auth/screens/userSignUp.dart';
+import 'package:user_auth/pages/user/auth/service/auth_provider.dart';
+import 'package:user_auth/pages/user/auth/service/auth_service.dart';
+import 'package:user_auth/pages/user/home/home_screen.dart';
 import 'package:user_auth/utils/routes/go_route.dart';
 
 import 'package:user_auth/utils/widget/myButton.dart';
+import 'package:user_auth/utils/widget/mySbackBar.dart';
 
-class UserloginPage extends StatelessWidget {
+class UserloginPage extends ConsumerWidget {
   const UserloginPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final formState = ref.watch(authFormProvider);
+    final formNotifier = ref.read(authFormProvider.notifier);
+    final authMethod = ref.read(authMethodProvider);
+
+    void Login() async {
+      if (!formState.isFormValid) {
+        formNotifier
+            .showValidationErrors(); // sets nameError, emailError, passwordError
+        return; // stop here, do NOT call Firebase yet
+      }
+
+      formNotifier.setLoading(true);
+      final res = await authMethod.loginUser(
+        email: formState.email,
+        password: formState.password,
+      );
+      formNotifier.setLoading(false);
+
+      if (res == "Success") {
+        NavigationHelper.push(context, HomeScreen());
+        Mysbackbar(
+          message: "successfuly log in 🎉",
+          context: context,
+          isError: false,
+        );
+      } else {
+        Mysbackbar(message: res, context: context, isError: true);
+      }
+    }
+
     double height = MediaQuery.of(context).size.height;
     return Scaffold(
       backgroundColor: Colors.white,
@@ -36,7 +73,9 @@ class UserloginPage extends StatelessWidget {
                 children: [
                   TextField(
                     autocorrect: false,
+                    onChanged: (value) => formNotifier.updateEmail(value),
                     keyboardType: TextInputType.emailAddress,
+
                     decoration: InputDecoration(
                       prefixIcon: Icon(Icons.email),
                       labelText: "Enter your email",
@@ -44,24 +83,58 @@ class UserloginPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(30),
                       ),
                       contentPadding: EdgeInsets.all(15),
+                      errorText: formState.emailError,
                     ),
                   ),
                   SizedBox(height: 20),
                   TextField(
                     autocorrect: false,
                     keyboardType: TextInputType.visiblePassword,
+                    onChanged: (value) => formNotifier.updatePassword(value),
+                    obscureText: formState.isPasswordHidden,
                     decoration: InputDecoration(
                       prefixIcon: Icon(Icons.lock),
                       labelText: "Enter your password",
+
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          formNotifier.togglePasswordVisiblity();
+                        },
+                        icon:
+                            formState.isPasswordHidden
+                                ? Icon(Icons.visibility)
+                                : Icon(Icons.visibility_off),
+                      ),
 
                       contentPadding: EdgeInsets.all(15),
+
+                      errorText: formState.passwordError,
                     ),
                   ),
                   SizedBox(height: 20),
-                  MyButton(onTab: () {}, buttonText: "Login"),
+                  formState.isLoading
+                      ? Center(child: CircularProgressIndicator())
+                      : MyButton(
+                        onTab: () {
+                          Login();
+                        },
+                        buttonText: "Login",
+                      ),
+                  SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(color: Colors.black, height: 1),
+                      ),
+                      Text("Or"),
+                      Expanded(
+                        child: Container(color: Colors.black, height: 1),
+                      ),
+                    ],
+                  ),
                   Row(
                     children: [
                       Spacer(),

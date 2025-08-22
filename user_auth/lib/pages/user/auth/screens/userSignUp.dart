@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:user_auth/pages/user/auth/screens/userLogIn.dart';
 import 'package:user_auth/pages/user/auth/service/auth_provider.dart';
 import 'package:user_auth/pages/user/auth/service/auth_service.dart';
+import 'package:user_auth/pages/user/home/home_screen.dart';
 import 'package:user_auth/utils/routes/go_route.dart';
 import 'package:user_auth/utils/widget/myButton.dart';
 import 'package:user_auth/utils/widget/mySbackBar.dart';
@@ -14,18 +15,25 @@ class UserSignUpPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final formState = ref.watch(authFormProvider);
     final formNotifier = ref.read(authFormProvider.notifier);
-    final authMethod = ref.read(AuthMethodProvider);
-    void signup() async {
-      formNotifier.setLoading(true);
+    final authMethod = ref.read(authMethodProvider);
 
+    void signup() async {
+      if (!formState.isFormValid) {
+        formNotifier
+            .showValidationErrors(); // sets nameError, emailError, passwordError
+        return; // stop here, do NOT call Firebase yet
+      }
+
+      formNotifier.setLoading(true);
       final res = await authMethod.signUpUser(
         email: formState.email,
         password: formState.password,
         name: formState.name,
       );
       formNotifier.setLoading(false);
+
       if (res == "Success") {
-        NavigationHelper.push(context, UserloginPage());
+        NavigationHelper.push(context, HomeScreen());
         Mysbackbar(
           message: "Sign up successful 🎉",
           context: context,

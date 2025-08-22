@@ -7,6 +7,7 @@ class AuthFormState {
   final String? passwordError;
   final bool isLoading;
   final bool isPasswordHidden;
+  final bool showErrors;
 
   AuthFormState({
     this.name = "",
@@ -17,12 +18,16 @@ class AuthFormState {
     this.passwordError,
     this.isLoading = false,
     this.isPasswordHidden = true,
+    this.showErrors = false,
   });
 
   bool get isFormValid =>
       name.isNotEmpty &&
+      name.length >= 6 &&
       email.isNotEmpty &&
+      email.length >= 6 &&
       password.isNotEmpty &&
+      password.length >= 6 &&
       nameError == null &&
       emailError == null &&
       passwordError == null;
@@ -36,6 +41,7 @@ class AuthFormState {
     String? passwordError,
     bool? isLoading,
     bool? isPasswordHidden,
+    bool? showErrors,
   }) {
     return AuthFormState(
       name: name ?? this.name,
@@ -46,6 +52,7 @@ class AuthFormState {
       passwordError: passwordError ?? this.passwordError,
       isLoading: isLoading ?? this.isLoading,
       isPasswordHidden: isPasswordHidden ?? this.isPasswordHidden,
+      showErrors: showErrors ?? this.showErrors,
     );
   }
 }
